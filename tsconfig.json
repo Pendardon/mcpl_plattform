@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
-    /* Bundler */
     "baseUrl": ".",
-    "module": "esnext",
+    "module": "CommonJS",
     "jsx": "preserve",
     "allowJs": true,
     "resolveJsonModule": true,
@@ -10,7 +9,7 @@
     /* Build */
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "incremental": true,
     "skipLibCheck": true,
@@ -25,6 +24,6 @@
     /* Plugins */
     "plugins": [{ "name": "next" }]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "test-bcrypt.ts"],
   "exclude": ["node_modules"]
 }
