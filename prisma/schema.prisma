@@ -1,0 +1,199 @@
+// Prisma Schema for MCPL Plattform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int      @id @default(autoincrement())
+  name            String   @db.VarChar(255)
+  email           String   @unique @db.VarChar(255)
+  password        String   @db.VarChar(255)
+  status          Int // Consider ENUM if limited values
+  role_id         Int
+  university_id   Int?
+  subscription_id Int?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  Role         Role          @relation(fields: [role_id], references: [id])
+  University   University?   @relation(fields: [university_id], references: [id])
+  Subscription Subscription? @relation(fields: [subscription_id], references: [id])
+  Payment      Payment[]
+  CardDecks    CardDeck[]
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  Users       User[]
+  Permissions RolePermission[]
+}
+
+model RolePermission {
+  id            Int      @id @default(autoincrement())
+  role_id       Int
+  permission_id Int
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  Role       Role       @relation(fields: [role_id], references: [id])
+  Permission Permission @relation(fields: [permission_id], references: [id])
+}
+
+model Permission {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  RolePermissions RolePermission[]
+}
+
+model CardDeck {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  show_author Boolean
+  share_link  Boolean
+  user_id     Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  User  User   @relation(fields: [user_id], references: [id])
+  Cards Card[]
+}
+
+model Card {
+  id          Int      @id @default(autoincrement())
+  question    String   @db.Text
+  deck_id     Int
+  category_id Int?
+  type        String   @db.VarChar(255)
+  status      Int // Consider ENUM if limited values
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  CardDeck    CardDeck      @relation(fields: [deck_id], references: [id])
+  Category    CardCategory? @relation(fields: [category_id], references: [id])
+  CardAnswers CardAnswer[]
+}
+
+model CardCategory {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(255)
+  status     Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  Cards Card[]
+}
+
+model CardAnswer {
+  id         Int      @id @default(autoincrement())
+  card_id    Int
+  order      Int
+  answer     String   @db.Text
+  is_true    Boolean
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  Card Card @relation(fields: [card_id], references: [id])
+}
+
+model Payment {
+  id                Int      @id @default(autoincrement())
+  name              String   @db.VarChar(255)
+  description       String?  @db.Text
+  amount            Float
+  payment_date      DateTime
+  payment_status    Int
+  user_id           Int
+  subscription_id   Int
+  payment_method_id Int
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  User          User          @relation(fields: [user_id], references: [id])
+  Subscription  Subscription  @relation(fields: [subscription_id], references: [id])
+  PaymentMethod PaymentMethod @relation(fields: [payment_method_id], references: [id])
+}
+
+model PaymentMethod {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(255)
+  description  String?  @db.Text
+  status       Int
+  api_type     String?  @db.VarChar(255)
+  api_key      String?  @db.VarChar(255)
+  api_secret   String?  @db.VarChar(255)
+  callback_url String?  @db.VarChar(255)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  Payments Payment[]
+}
+
+model Subscription {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  price       Float
+  offer_id    Int?
+  start_date  DateTime
+  end_date    DateTime
+  status      Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  Users    User[]
+  Offer    Offer?    @relation(fields: [offer_id], references: [id])
+  Payments Payment[]
+}
+
+model Offer {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  price       Float
+  price_offer Float
+  start_date  DateTime
+  end_date    DateTime
+  status      Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  Subscriptions Subscription[]
+}
+
+model University {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  country_id  Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  Users   User[]
+  Country Country @relation(fields: [country_id], references: [id])
+}
+
+model Country {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(255)
+  code       String   @db.VarChar(10)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  Universities University[]
+}
